@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Dashboard - MoneyParce{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Recent Transactions</h4>
+            </div>
+            <div class="card-body">
+                {% if recent_transactions %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>{{ transaction.date }}</td>
+                                <td>
+                                    <span class="badge {% if transaction.transaction_type == 'income' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ transaction.get_transaction_type_display }}
+                                    </span>
+                                </td>
+                                <td>${{ transaction.amount }}</td>
+                                <td>{{ transaction.category.name|default:"-" }}</td>
+                                <td>{{ transaction.description|truncatechars:30 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-end">
+                    <a href="{% url 'transaction_list' %}" class="btn btn-primary">View All Transactions</a>
+                </div>
+                {% else %}
+                <p>No recent transactions found.</p>
+                <a href="{% url 'transaction_create' %}" class="btn btn-primary">Add Transaction</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Active Budgets</h4>
+            </div>
+            <div class="card-body">
+                {% if active_budgets %}
+                <div class="list-group">
+                    {% for budget in active_budgets %}
+                    <div class="list-group-item">
+                        <h6 class="mb-1">{{ budget.category.name }}</h6>
+                        <p class="mb-1">${{ budget.amount }} ({{ budget.period }})</p>
+                        <small>From {{ budget.start_date }} to {{ budget.end_date|default:"ongoing" }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-end mt-3">
+                    <a href="{% url 'budget_list' %}" class="btn btn-primary">View All Budgets</a>
+                </div>
+                {% else %}
+                <p>No active budgets found.</p>
+                <a href="{% url 'budget_create' %}" class="btn btn-primary">Create Budget</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Savings Goals</h4>
+            </div>
+            <div class="card-body">
+                {% if savings_goals %}
+                <div class="list-group">
+                    {% for goal in savings_goals %}
+                    <div class="list-group-item">
+                        <h6 class="mb-1">{{ goal.name }}</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ goal.current_amount|div:goal.target_amount|mul:100 }}%">
+                                {{ goal.current_amount|div:goal.target_amount|mul:100|floatformat:0 }}%
+                            </div>
+                        </div>
+                        <p class="mb-1">${{ goal.current_amount }} / ${{ goal.target_amount }}</p>
+                        <small>Target: {{ goal.target_date }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-end mt-3">
+                    <a href="{% url 'savings_goals' %}" class="btn btn-primary">View All Goals</a>
+                </div>
+                {% else %}
+                <p>No savings goals found.</p>
+                <a href="{% url 'savings_goal_create' %}" class="btn btn-primary">Create Goal</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
