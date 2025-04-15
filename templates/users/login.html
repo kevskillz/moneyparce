@@ -1,28 +1,171 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Login - MoneyParce{% endblock %}
+{% block title %}Login – MoneyParce{% endblock %}
+
+{% block extra_css %}
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #121212;
+    position: relative;
+    color: #e0e0e0;
+  }
+
+  /* Two layers for cross‑fading blobs */
+  .pulse-layer {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 0;
+    opacity: 0;
+    transition: opacity 5s ease-in-out;
+    background-repeat: no-repeat;
+    background-size: 200% 200%;
+  }
+  #pulse1 { opacity: 1; }
+
+  /* Login UI above everything */
+  .login-container, .card { position: relative; z-index: 1; }
+  .login-container {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card {
+    background-color: #1e1e1e;
+    border: none; border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+  .card-accent {
+    height: 6px; background: linear-gradient(90deg,#00c6ff,#0072ff);
+  }
+  .text-white { color: #fff !important; }
+
+  /* Inputs and form styling */
+  .card-body label,
+  .card-body .form-text,
+  .card-body .form-control,
+  .card-body .form-control::placeholder {
+    color: #e0e0e0 !important;
+  }
+  .form-control {
+    background-color: #2a2a2a !important;
+    border: 1px solid #444; border-radius: .5rem;
+    padding: .75rem 1rem;
+    transition: border-color .2s, box-shadow .2s, background-color .5s;
+  }
+  @keyframes focusGlow {
+    0% { box-shadow:0 0 0px rgba(0,198,255,0); }
+    50% { box-shadow:0 0 8px rgba(0,198,255,0.6); }
+    100%{ box-shadow:0 0 0px rgba(0,198,255,0); }
+  }
+  .form-control:focus {
+    background-color: #2a2a2a !important;
+    border-color: #00c6ff;
+    animation: focusGlow 1s ease-in-out infinite;
+    color: #fff;
+  }
+  @keyframes typingPulse {
+    0% { background-color:#2a2a2a; }
+    50%{ background-color:#333444; }
+    100%{ background-color:#2a2a2a; }
+  }
+  .form-control.typing {
+    background-color:#2a2a2a !important;
+    animation:typingPulse 1s ease-in-out infinite;
+  }
+
+  /* Button glow */
+  .btn-glow {
+    position:relative; overflow:hidden; border:none; transition:color .3s;
+  }
+  .btn-glow::before {
+    content:''; position:absolute; top:-50%; left:-50%;
+    width:200%; height:200%;
+    background:radial-gradient(circle at center, rgba(0,198,255,0.5), transparent 60%);
+    opacity:0; transition:opacity .4s, transform .4s; transform:scale(0);
+  }
+  .btn-glow:hover::before { opacity:1; transform:scale(1); }
+  .btn-glow:hover { color:#fff; }
+
+  .link-light { color:#80d8ff; transition:color .2s; }
+  .link-light:hover { color:#a6ffff; text-decoration:none; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="text-center">Login</h3>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Login</button>
-                    </div>
-                </form>
-                <div class="text-center mt-3">
-                    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
-                </div>
-            </div>
+<div id="pulse1" class="pulse-layer"></div>
+<div id="pulse2" class="pulse-layer"></div>
+
+<div class="container login-container">
+  <div class="col-md-6 col-lg-5">
+    <div class="card">
+      <div class="card-accent"></div>
+      <div class="card-body p-4">
+        <h3 class="card-title text-center mb-4 text-white">Welcome Back</h3>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="d-grid mt-3">
+            <button type="submit" class="btn btn-primary btn-lg btn-glow">Log In</button>
+          </div>
+        </form>
+        <div class="text-center mt-4">
+          <small class="text-white">
+            Don’t have an account? <a href="{% url 'register' %}" class="link-light">Create one</a>
+          </small>
         </div>
+      </div>
     </div>
+    <p class="text-center small mt-3 text-white">
+      © {{ now.year }} MoneyParce. All rights reserved.
+    </p>
+  </div>
 </div>
-{% endblock %} 
+
+<script>
+// Random utilities
+function rndPct(){ return Math.floor(Math.random()*100)+'%'; }
+function rndColor(){
+  const arr = ['rgba(0,128,255,0.2)','rgba(255,100,100,0.2)','rgba(100,255,100,0.2)'];
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+// Cross‑fade layers
+const layers = [
+  document.getElementById('pulse1'),
+  document.getElementById('pulse2')
+];
+let visible = 0;
+
+function styleLayer(layer){
+  layer.style.background =
+    `radial-gradient(circle at ${rndPct()} ${rndPct()}, ${rndColor()}, transparent 60%)`;
+}
+
+function crossfade(){
+  const next = 1 - visible;
+  styleLayer(layers[next]);
+  layers[next].style.opacity = 1;
+  layers[visible].style.opacity = 0;
+  visible = next;
+}
+
+// Initialize
+styleLayer(layers[0]);
+styleLayer(layers[1]);
+setInterval(crossfade, 5000);
+
+// Typing pulse logic
+document.querySelectorAll('.form-control').forEach(input => {
+  let timer;
+  input.addEventListener('input', () => {
+    input.classList.add('typing');
+    clearTimeout(timer);
+    timer = setTimeout(() => input.classList.remove('typing'), 500);
+  });
+});
+</script>
+{% endblock %}
