@@ -14,25 +14,22 @@
     position: relative;
   }
 
-  /* Background blobs */
+  /* Ambient background layers */
   .pulse-layer {
     position: fixed; top: 0; left: 0;
     width: 100vw; height: 100vh;
     pointer-events: none; z-index: 0;
     opacity: 0; transition: opacity 5s ease-in-out;
-    background-repeat: no-repeat;
-    background-size: 200% 200%;
+    background-repeat: no-repeat; background-size: 200% 200%;
   }
   #pulse1 { opacity: 1; }
   #pulse2 { opacity: 0; }
 
-  /* Main container */
   .dashboard-container {
     position: relative; z-index: 1;
     padding: 4rem 1rem;
   }
 
-  /* Card styling */
   .card {
     background-color: #1e1e1e;
     border: none; border-radius: 1rem;
@@ -49,21 +46,31 @@
   .card-header h4 {
     color: #fff; margin: 0; font-size: 1.5rem;
   }
-
-  /* Ensure “No … found.” messages are white */
   .card-body p {
     color: #fff !important;
   }
 
-  /* Table styling */
-  .table {
-    color: #e0e0e0;
-  }
-  .table thead th {
-    border-bottom: 2px solid #333;
-  }
-  .table tbody tr:hover {
+  /* Dark, rounded table container */
+  .table-responsive {
     background-color: #2a2a2a;
+    border-radius: .75rem;
+    padding: 1rem;
+  }
+  .table-responsive .table {
+    background: transparent !important;
+    margin-bottom: 0;
+  }
+  .table-responsive .table thead th,
+  .table-responsive .table tbody td {
+    background: transparent !important;
+    color: #e0e0e0 !important;
+  }
+  .table-responsive .table thead th:first-child { border-top-left-radius: .5rem; }
+  .table-responsive .table thead th:last-child  { border-top-right-radius: .5rem; }
+  .table-responsive .table tbody tr:last-child td:first-child { border-bottom-left-radius: .5rem; }
+  .table-responsive .table tbody tr:last-child td:last-child  { border-bottom-right-radius: .5rem; }
+  .table-hover tbody tr:hover {
+    background-color: #333 !important;
   }
 
   /* Badge styles */
@@ -84,186 +91,171 @@
     color: #e0e0e0;
     position: relative; z-index: 2;
   }
-  .list-group-item:hover {
-    background-color: #333;
-  }
-  .list-group-item h6 {
-    color: #fff; margin-bottom:.25rem;
-  }
-  .list-group-item p,
-  .list-group-item small {
-    color: #ccc;
-  }
-  .list-group-item .bi-chevron-right {
-    color: #80d8ff; font-size:1.25rem;
-  }
+  .list-group-item:hover { background-color: #333; }
+  .list-group-item h6 { color: #fff; margin-bottom:.25rem; }
+  .list-group-item p, .list-group-item small { color: #ccc; }
+  .list-group-item .bi-chevron-right { color: #80d8ff; font-size:1.25rem; }
 
-  /* Buttons */
+  /* Button styling */
   .btn-primary {
     background-color: #0072ff; border: none;
     padding: .5rem 1rem; border-radius: .5rem;
     transition: background-color .3s, box-shadow .3s;
   }
   .btn-primary:hover {
-    background-color: #005fcc;
-    box-shadow: 0 0 8px rgba(0,198,255,0.6);
+    background-color: #005fcc; box-shadow: 0 0 8px rgba(0,198,255,0.6);
   }
-  .text-end .btn-primary {
-    margin-top: 1rem;
+  .text-end .btn-primary { margin-top: 1rem; }
+  .btn-outline-primary {
+    color: #80d8ff; border-color: #80d8ff;
+  }
+  .btn-outline-primary:hover {
+    background-color: #80d8ff; color: #121212;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div id="pulse1" class="pulse-layer"></div>
-<div id="pulse2" class="pulse-layer"></div>
+  <div id="pulse1" class="pulse-layer"></div>
+  <div id="pulse2" class="pulse-layer"></div>
 
-<div class="dashboard-container container-fluid">
-  <div class="row">
-    <!-- Recent Transactions -->
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-accent"></div>
-        <div class="card-header">
-          <h4>Recent Transactions</h4>
-        </div>
-        <div class="card-body">
-          {% if recent_transactions %}
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for t in recent_transactions %}
-                  <tr>
-                    <td>{{ t.date }}</td>
-                    <td>
-                      <span class="{% if t.transaction_type == 'income' %}badge-income{% else %}badge-expense{% endif %}">
-                        {{ t.get_transaction_type_display }}
-                      </span>
-                    </td>
-                    <td>${{ t.amount }}</td>
-                    <td>{{ t.category.name|default:"-" }}</td>
-                    <td>{{ t.description|truncatechars:30 }}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-            <div class="text-end">
-              <a href="{% url 'transaction_list' %}" class="btn btn-primary">View All Transactions</a>
-            </div>
-          {% else %}
-            <p>No recent transactions found.</p>
-            <a href="{% url 'transaction_create' %}" class="btn btn-primary">Add Transaction</a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <!-- Side Panels -->
-    <div class="col-md-4">
-      <!-- Active Budgets -->
-      <div class="card">
-        <div class="card-accent"></div>
-        <div class="card-header">
-          <h4>Active Budgets</h4>
-        </div>
-        <div class="card-body">
-          {% if active_budgets %}
-            <div class="list-group">
-              {% for b in active_budgets %}
-              <div class="list-group-item">
-                <div class="d-flex w-100 justify-content-between">
-                  <h6>{{ b.category.name }}</h6>
-                  <i class="bi bi-chevron-right"></i>
-                </div>
-                <p>${{ b.amount }} ({{ b.period }})</p>
-                <small>From {{ b.start_date }} to {{ b.end_date|default:"ongoing" }}</small>
+  <div class="dashboard-container container-fluid">
+    <div class="row">
+      <!-- Recent Transactions -->
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <h4>Recent Transactions</h4>
+          </div>
+          <div class="card-body">
+            {% if recent_transactions %}
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Category</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for t in recent_transactions %}
+                    <tr>
+                      <td>{{ t.date }}</td>
+                      <td>
+                        <span class="{% if t.transaction_type == 'income' %}badge-income{% else %}badge-expense{% endif %}">
+                          {{ t.get_transaction_type_display }}
+                        </span>
+                      </td>
+                      <td>${{ t.amount }}</td>
+                      <td>{{ t.category.name|default:"-" }}</td>
+                      <td>{{ t.description|truncatechars:30 }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
               </div>
-              {% endfor %}
-            </div>
-            <div class="text-end">
-              <a href="{% url 'budget_list' %}" class="btn btn-primary">View All Budgets</a>
-            </div>
-          {% else %}
-            <p>No active budgets found.</p>
-            <a href="{% url 'budget_create' %}" class="btn btn-primary">Create Budget</a>
-          {% endif %}
+              <div class="text-end">
+                <a href="{% url 'transaction_list' %}" class="btn btn-primary">View All Transactions</a>
+              </div>
+            {% else %}
+              <p>No recent transactions found.</p>
+              <a href="{% url 'transaction_create' %}" class="btn btn-primary">Add Transaction</a>
+            {% endif %}
+          </div>
         </div>
       </div>
 
-      <!-- Savings Goals -->
-      <div class="card">
-        <div class="card-accent"></div>
-        <div class="card-header">
-          <h4>Savings Goals</h4>
-        </div>
-        <div class="card-body">
-          {% if savings_goals %}
-            <div class="list-group">
-              {% for g in savings_goals %}
-              <div class="list-group-item">
-                <div class="d-flex w-100 justify-content-between">
-                  <h6>{{ g.name }}</h6>
-                  <i class="bi bi-chevron-right"></i>
-                </div>
-                <div class="progress mb-2">
-                  <div class="progress-bar" role="progressbar"
-                       style="width: {{ g.current_amount|div:g.target_amount|mul:100 }}%">
-                    {{ g.current_amount|div:g.target_amount|mul:100|floatformat:0 }}%
+      <!-- Active Budgets & Savings Goals -->
+      <div class="col-md-4">
+        <!-- Active Budgets -->
+        <div class="card">
+          <div class="card-accent"></div>
+          <div class="card-header"><h4>Active Budgets</h4></div>
+          <div class="card-body">
+            {% if active_budgets %}
+              <div class="list-group">
+                {% for b in active_budgets %}
+                <div class="list-group-item">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6>{{ b.category.name }}</h6><i class="bi bi-chevron-right"></i>
                   </div>
+                  <p>${{ b.amount }} ({{ b.period }})</p>
+                  <small>From {{ b.start_date }} to {{ b.end_date|default:"ongoing" }}</small>
                 </div>
-                <p>${{ g.current_amount }} / ${{ g.target_amount }}</p>
-                <small>Target: {{ g.target_date }}</small>
+                {% endfor %}
               </div>
-              {% endfor %}
-            </div>
-            <div class="text-end">
-              <a href="{% url 'savings_goals' %}" class="btn btn-primary">View All Goals</a>
-            </div>
-          {% else %}
-            <p>No savings goals found.</p>
-            <a href="{% url 'savings_goal_create' %}" class="btn btn-primary">Create Goal</a>
-          {% endif %}
+              <div class="text-end">
+                <a href="{% url 'budget_list' %}" class="btn btn-primary">View All Budgets</a>
+              </div>
+            {% else %}
+              <p>No active budgets found.</p>
+              <a href="{% url 'budget_create' %}" class="btn btn-primary">Create Budget</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Savings Goals -->
+        <div class="card">
+          <div class="card-accent"></div>
+          <div class="card-header"><h4>Savings Goals</h4></div>
+          <div class="card-body">
+            {% if savings_goals %}
+              <div class="list-group">
+                {% for g in savings_goals %}
+                <div class="list-group-item">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6>{{ g.name }}</h6><i class="bi bi-chevron-right"></i>
+                  </div>
+                  <div class="progress mb-2">
+                    <div class="progress-bar" role="progressbar"
+                         style="width: {{ g.current_amount|div:g.target_amount|mul:100 }}%">
+                      {{ g.current_amount|div:g.target_amount|mul:100|floatformat:0 }}%
+                    </div>
+                  </div>
+                  <p>${{ g.current_amount }} / ${{ g.target_amount }}</p>
+                  <small>Target: {{ g.target_date }}</small>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="text-end">
+                <a href="{% url 'savings_goals' %}" class="btn btn-primary">View All Goals</a>
+              </div>
+            {% else %}
+              <p>No savings goals found.</p>
+              <a href="{% url 'savings_goal_create' %}" class="btn btn-primary">Create Goal</a>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-// Background animation
-function rndPct(){ return Math.floor(Math.random()*100)+'%'; }
-function rndColor(){
-  const arr=['rgba(0,128,255,0.2)','rgba(255,100,100,0.2)','rgba(100,255,100,0.2)'];
-  return arr[Math.floor(Math.random()*arr.length)];
-}
-const layers = [
-  document.getElementById('pulse1'),
-  document.getElementById('pulse2')
-];
-let visible = 0;
-function styleLayer(layer){
-  layer.style.background =
-    `radial-gradient(circle at ${rndPct()} ${rndPct()}, ${rndColor()}, transparent 60%)`;
-}
-function crossfade(){
-  const next = 1 - visible;
-  styleLayer(layers[next]);
-  layers[next].style.opacity = 1;
-  layers[visible].style.opacity = 0;
-  visible = next;
-}
-styleLayer(layers[0]);
-styleLayer(layers[1]);
-setInterval(crossfade, 5000);
+  function rndPct(){ return Math.floor(Math.random()*100)+'%'; }
+  function rndColor(){
+    const arr=['rgba(0,128,255,0.2)','rgba(255,100,100,0.2)','rgba(100,255,100,0.2)'];
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
+  const layers=[document.getElementById('pulse1'),document.getElementById('pulse2')];
+  let visible=0;
+  function styleLayer(l){
+    l.style.background=`radial-gradient(circle at ${rndPct()} ${rndPct()}, ${rndColor()}, transparent 60%)`;
+  }
+  function crossfade(){
+    const next=1-visible;
+    styleLayer(layers[next]);
+    layers[next].style.opacity=1;
+    layers[visible].style.opacity=0;
+    visible=next;
+  }
+  styleLayer(layers[0]);
+  styleLayer(layers[1]);
+  setInterval(crossfade,5000);
 </script>
 {% endblock %}

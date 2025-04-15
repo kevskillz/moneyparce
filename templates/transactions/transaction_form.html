@@ -1,113 +1,200 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Transaction - MoneyParce{% endblock %}
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Transaction – MoneyParce{% endblock %}
+
+{% block extra_css %}
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; min-height: 100%;
+    overflow-x: hidden; overflow-y: auto;
+    background: #121212;
+    color: #e0e0e0;
+    position: relative;
+  }
+  .pulse-layer {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 0;
+    opacity: 0; transition: opacity 5s ease-in-out;
+    background-repeat: no-repeat; background-size: 200% 200%;
+  }
+  #pulse1 { opacity: 1; } #pulse2 { opacity: 0; }
+
+  .dashboard-container {
+    position: relative; z-index: 1;
+    padding: 4rem 1rem;
+  }
+  .card {
+    background-color: #1e1e1e;
+    border: none; border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    overflow: hidden; margin-bottom: 2rem;
+  }
+  .card-accent {
+    height: 6px;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+  }
+  .card-header {
+    background: transparent; border-bottom: none; padding: 1.5rem;
+  }
+  .card-header h2 {
+    color: #fff; margin: 0; font-size: 1.75rem;
+  }
+
+  .form-label { color: #e0e0e0; }
+  .form-control, .form-select, .input-group-text {
+    background: #2a2a2a !important;
+    border: 1px solid #444 !important;
+    color: #e0e0e0 !important;
+    border-radius: .5rem;
+  }
+  .form-control::placeholder {
+    color: #bbb !important;
+    opacity: 1;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #00c6ff !important;
+    box-shadow: 0 0 8px rgba(0,198,255,0.4) !important;
+    color: #fff !important;
+  }
+  .input-group-text {
+    border-right: 0;
+  }
+  .input-group .form-control {
+    border-left: 0;
+  }
+
+  .form-check-label { color: #e0e0e0; }
+  .invalid-feedback { color: #ff6b6b; }
+
+  .btn-secondary {
+    background: #444; border: none; color: #e0e0e0;
+    transition: background .2s;
+  }
+  .btn-secondary:hover { background: #555; }
+
+  .btn-primary {
+    background: #0072ff; border: none;
+    transition: background .3s, box-shadow .3s;
+  }
+  .btn-primary:hover {
+    background: #005fcc;
+    box-shadow: 0 0 8px rgba(0,198,255,0.6);
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Transaction</h2>
+<div id="pulse1" class="pulse-layer"></div>
+<div id="pulse2" class="pulse-layer"></div>
+
+<div class="dashboard-container container">
+  <div class="card">
+    <div class="card-accent"></div>
+    <div class="card-header text-center">
+      <h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Transaction</h2>
     </div>
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="{{ form.amount.id_for_label }}" class="form-label">Amount</label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        {{ form.amount }}
-                    </div>
-                    {% if form.amount.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.amount.errors }}
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <div class="col-md-6">
-                    <label for="{{ form.transaction_type.id_for_label }}" class="form-label">Type</label>
-                    {{ form.transaction_type }}
-                    {% if form.transaction_type.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.transaction_type.errors }}
-                    </div>
-                    {% endif %}
-                </div>
+    <div class="card-body p-4">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.amount.id_for_label }}">Amount</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              {{ form.amount }}
             </div>
+            {% for err in form.amount.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.transaction_type.id_for_label }}">Type</label>
+            {{ form.transaction_type }}
+            {% for err in form.transaction_type.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
+        </div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
-                    {{ form.category }}
-                    {% if form.category.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.category.errors }}
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <div class="col-md-6">
-                    <label for="{{ form.date.id_for_label }}" class="form-label">Date</label>
-                    {{ form.date }}
-                    {% if form.date.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.date.errors }}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.category.id_for_label }}">Category</label>
+            {{ form.category }}
+            {% for err in form.category.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.date.id_for_label }}">Date</label>
+            {{ form.date }}
+            {% for err in form.date.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
+        </div>
 
-            <div class="mb-3">
-                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
-                {{ form.description }}
-                {% if form.description.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.description.errors }}
-                </div>
-                {% endif %}
-            </div>
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.description.id_for_label }}">Description</label>
+          {{ form.description }}
+          {% for err in form.description.errors %}
+            <div class="invalid-feedback d-block">{{ err }}</div>
+          {% endfor %}
+        </div>
 
-            <div class="mb-3">
-                <div class="form-check">
-                    {{ form.is_recurring }}
-                    <label class="form-check-label" for="{{ form.is_recurring.id_for_label }}">
-                        This is a recurring transaction
-                    </label>
-                </div>
-            </div>
+        <div class="form-check mb-3">
+          {{ form.is_recurring }}
+          <label class="form-check-label" for="{{ form.is_recurring.id_for_label }}">
+            This is a recurring transaction
+          </label>
+        </div>
 
-            <div id="recurring-fields" class="mb-3" style="display: none;">
-                <label for="{{ form.recurring_frequency.id_for_label }}" class="form-label">Recurring Frequency</label>
-                {{ form.recurring_frequency }}
-                {% if form.recurring_frequency.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.recurring_frequency.errors }}
-                </div>
-                {% endif %}
-            </div>
+        <div id="recurring-fields" class="mb-3" style="display:none;">
+          <label class="form-label" for="{{ form.recurring_frequency.id_for_label }}">Recurring Frequency</label>
+          {{ form.recurring_frequency }}
+          {% for err in form.recurring_frequency.errors %}
+            <div class="invalid-feedback d-block">{{ err }}</div>
+          {% endfor %}
+        </div>
 
-            <div class="d-flex justify-content-between">
-                <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update{% else %}Add{% endif %} Transaction</button>
-            </div>
-        </form>
+        <div class="d-flex justify-content-between">
+          <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            {% if form.instance.pk %}Update{% else %}Add{% endif %} Transaction
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const isRecurringCheckbox = document.getElementById('{{ form.is_recurring.id_for_label }}');
-    const recurringFields = document.getElementById('recurring-fields');
-    
-    function toggleRecurringFields() {
-        recurringFields.style.display = isRecurringCheckbox.checked ? 'block' : 'none';
-    }
-    
-    isRecurringCheckbox.addEventListener('change', toggleRecurringFields);
-    toggleRecurringFields(); // Initial state
+// Background animation
+function rndPct(){return Math.floor(Math.random()*100)+'%';}
+function rndColor(){
+  const arr=['rgba(0,128,255,0.2)','rgba(255,100,100,0.2)','rgba(100,255,100,0.2)'];
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+const layers=[document.getElementById('pulse1'),document.getElementById('pulse2')];
+let visible=0;
+function styleLayer(l){l.style.background=`radial-gradient(circle at ${rndPct()} ${rndPct()}, ${rndColor()}, transparent 60%)`;}
+function crossfade(){
+  const next=1-visible; styleLayer(layers[next]);
+  layers[next].style.opacity=1; layers[visible].style.opacity=0; visible=next;
+}
+styleLayer(layers[0]); styleLayer(layers[1]);
+setInterval(crossfade,5000);
+
+// Recurring toggle
+document.addEventListener('DOMContentLoaded',()=>{
+  const cb=document.getElementById('{{ form.is_recurring.id_for_label }}');
+  const rf=document.getElementById('recurring-fields');
+  function toggle(){ rf.style.display=cb.checked?'block':'none'; }
+  cb.addEventListener('change',toggle);
+  toggle();
 });
 </script>
 {% endblock %}
-{% endblock %} 

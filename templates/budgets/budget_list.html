@@ -1,67 +1,197 @@
 {% extends 'base.html' %}
 
-{% block title %}Budgets - MoneyParce{% endblock %}
+{% block title %}Budgets – MoneyParce{% endblock %}
+
+{% block extra_css %}
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; min-height: 100%;
+    overflow-x: hidden; overflow-y: auto;
+    background: #121212;
+    color: #e0e0e0;
+    position: relative;
+  }
+
+  /* Ambient background layers */
+  .pulse-layer {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 0;
+    opacity: 0; transition: opacity 5s ease-in-out;
+    background-repeat: no-repeat; background-size: 200% 200%;
+  }
+  #pulse1 { opacity: 1; } 
+  #pulse2 { opacity: 0; }
+
+  .dashboard-container {
+    position: relative; z-index: 1;
+    padding: 4rem 1rem;
+  }
+
+  .card {
+    background-color: #1e1e1e;
+    border: none; border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  h2.text-white {
+    color: #fff;
+  }
+
+  /* Force “No budgets found.” text white */
+  .text-center p {
+    color: #fff !important;
+  }
+
+  /* Dark, rounded table container */
+  .table-responsive {
+    background-color: #2a2a2a;
+    border-radius: .75rem;
+    padding: 1rem;
+  }
+  .table-responsive .table {
+    background: transparent !important;
+    margin-bottom: 0;
+  }
+  .table-responsive .table thead th,
+  .table-responsive .table tbody td {
+    background: transparent !important;
+    color: #e0e0e0 !important;
+  }
+  .table-responsive .table thead th:first-child { border-top-left-radius: .5rem; }
+  .table-responsive .table thead th:last-child  { border-top-right-radius: .5rem; }
+  .table-responsive .table tbody tr:last-child td:first-child { border-bottom-left-radius: .5rem; }
+  .table-responsive .table tbody tr:last-child td:last-child  { border-bottom-right-radius: .5rem; }
+  .table-hover tbody tr:hover {
+    background-color: #333 !important;
+  }
+
+  /* Badge overrides */
+  .badge.bg-success {
+    background-color: #28a745 !important;
+  }
+  .badge.bg-secondary {
+    background-color: #6c757d !important;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    background-color: #0072ff; border: none;
+    transition: background .3s, box-shadow .3s;
+  }
+  .btn-primary:hover {
+    background-color: #005fcc;
+    box-shadow: 0 0 8px rgba(0,198,255,0.6);
+  }
+  .btn-outline-primary {
+    color: #80d8ff; border-color: #80d8ff;
+  }
+  .btn-outline-primary:hover {
+    background-color: #80d8ff; color: #121212;
+  }
+  .btn-sm.btn-outline-primary, .btn-sm.btn-outline-danger {
+    border-radius: .5rem;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Budgets</h2>
-    <a href="{% url 'budget_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Create Budget
-    </a>
-</div>
+  <!-- Ambient background -->
+  <div id="pulse1" class="pulse-layer"></div>
+  <div id="pulse2" class="pulse-layer"></div>
 
-<div class="card">
-    <div class="card-body">
-        {% if budgets %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Category</th>
-                        <th>Amount</th>
-                        <th>Period</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for budget in budgets %}
-                    <tr>
-                        <td>{{ budget.category.name }}</td>
-                        <td>${{ budget.amount }}</td>
-                        <td>{{ budget.get_period_display }}</td>
-                        <td>{{ budget.start_date }}</td>
-                        <td>{{ budget.end_date|default:"Ongoing" }}</td>
-                        <td>
-                            <span class="badge {% if budget.is_active %}bg-success{% else %}bg-secondary{% endif %}">
-                                {{ budget.is_active|yesno:"Active,Inactive" }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="btn-group">
-                                <a href="{% url 'budget_edit' budget.pk %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a href="{% url 'budget_delete' budget.pk %}" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="text-center py-4">
-            <p class="text-muted">No budgets found.</p>
-            <a href="{% url 'budget_create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Create Your First Budget
-            </a>
-        </div>
-        {% endif %}
+  <div class="dashboard-container container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="text-white">Budgets</h2>
+      <a href="{% url 'budget_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Create Budget
+      </a>
     </div>
-</div>
-{% endblock %} 
+
+    <div class="card">
+      <div class="card-body">
+        {% if budgets %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Period</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for budget in budgets %}
+                <tr>
+                  <td>{{ budget.category.name }}</td>
+                  <td>${{ budget.amount }}</td>
+                  <td>{{ budget.get_period_display }}</td>
+                  <td>{{ budget.start_date }}</td>
+                  <td>{{ budget.end_date|default:"Ongoing" }}</td>
+                  <td>
+                    <span class="badge {% if budget.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                      {{ budget.is_active|yesno:"Active,Inactive" }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group">
+                      <a href="{% url 'budget_edit' budget.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <a href="{% url 'budget_delete' budget.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-4">
+            <p>No budgets found.</p>
+            <a href="{% url 'budget_create' %}" class="btn btn-primary">
+              <i class="bi bi-plus-circle"></i> Create Your First Budget
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Ambient background cross‑fade
+  function rndPct(){ return Math.floor(Math.random()*100)+'%'; }
+  function rndColor(){
+    const arr=['rgba(0,128,255,0.2)','rgba(255,100,100,0.2)','rgba(100,255,100,0.2)'];
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
+  const layers=[document.getElementById('pulse1'),document.getElementById('pulse2')];
+  let visible=0;
+  function styleLayer(l){
+    l.style.background=`radial-gradient(circle at ${rndPct()} ${rndPct()}, ${rndColor()}, transparent 60%)`;
+  }
+  function crossfade(){
+    const next=1-visible;
+    styleLayer(layers[next]);
+    layers[next].style.opacity=1;
+    layers[visible].style.opacity=0;
+    visible=next;
+  }
+  styleLayer(layers[0]); styleLayer(layers[1]);
+  setInterval(crossfade,5000);
+</script>
+{% endblock %}
