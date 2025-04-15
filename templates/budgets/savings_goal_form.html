@@ -1,69 +1,180 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
-{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Savings Goal - MoneyParce{% endblock %}
+{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Savings Goal – MoneyParce{% endblock %}
+
+{% block extra_css %}
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; min-height: 100%;
+    overflow-x: hidden; overflow-y: auto;
+    background: #121212;
+    color: #e0e0e0;
+    position: relative;
+  }
+  /* Animated background layers */
+  .pulse-layer {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 0;
+    opacity: 0; transition: opacity 5s ease-in-out;
+    background-repeat: no-repeat; background-size: 200% 200%;
+  }
+  #pulse1 { opacity: 1; } 
+  #pulse2 { opacity: 0; }
+
+  /* White labels */
+  .form-label {
+    color: #fff !important;
+  }
+
+  /* Dark inputs */
+  .form-control,
+  .form-select,
+  .input-group-text {
+    background: #2a2a2a !important;
+    border: 1px solid #444 !important;
+    color: #e0e0e0 !important;
+    border-radius: .5rem;
+  }
+  .form-control::placeholder { color: #bbb !important; }
+  .form-control:focus,
+  .form-select:focus {
+    background: #2a2a2a !important;
+    border-color: #00c6ff !important;
+    box-shadow: 0 0 8px rgba(0,198,255,0.4) !important;
+    color: #fff !important;
+  }
+
+  .form-text { color: #fff !important; }
+
+  /* Card styling */
+  .goal-card {
+    background-color: #1e1e1e;
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 48rem;
+    margin: 2rem auto;
+  }
+  .card-accent {
+    height: 6px;
+    background: linear-gradient(90deg,#00c6ff,#0072ff);
+  }
+  .card-header {
+    background: transparent;
+    border-bottom: none;
+    padding: 1.5rem;
+  }
+  .card-header h2 {
+    color: #fff;
+    margin: 0;
+    font-size: 1.75rem;
+  }
+
+  /* Buttons */
+  .btn-secondary {
+    background: #444; border: none; color: #e0e0e0;
+    transition: background .2s;
+  }
+  .btn-secondary:hover { background: #555; }
+  .btn-primary {
+    background: #0072ff; border: none;
+    transition: background .3s, box-shadow .3s;
+  }
+  .btn-primary:hover {
+    background: #005fcc;
+    box-shadow: 0 0 8px rgba(0,198,255,0.6);
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
+  <div id="pulse1" class="pulse-layer"></div>
+  <div id="pulse2" class="pulse-layer"></div>
+
+  <div class="container">
+    <div class="card goal-card">
+      <div class="card-accent"></div>
+      <div class="card-header text-center">
         <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Savings Goal</h2>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="mb-3">
-                <label for="{{ form.name.id_for_label }}" class="form-label">Goal Name</label>
-                {{ form.name }}
-                {% if form.name.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.name.errors }}
-                </div>
-                {% endif %}
-            </div>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="{{ form.target_amount.id_for_label }}" class="form-label">Target Amount</label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        {{ form.target_amount }}
-                    </div>
-                    {% if form.target_amount.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.target_amount.errors }}
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <div class="col-md-6">
-                    <label for="{{ form.current_amount.id_for_label }}" class="form-label">Current Amount</label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        {{ form.current_amount }}
-                    </div>
-                    {% if form.current_amount.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.current_amount.errors }}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+          <div class="mb-3">
+            <label for="{{ form.name.id_for_label }}" class="form-label">Goal Name</label>
+            {{ form.name }}
+            {% for err in form.name.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
 
-            <div class="mb-3">
-                <label for="{{ form.target_date.id_for_label }}" class="form-label">Target Date</label>
-                {{ form.target_date }}
-                {% if form.target_date.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.target_date.errors }}
-                </div>
-                {% endif %}
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="{{ form.target_amount.id_for_label }}" class="form-label">Target Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.target_amount }}
+              </div>
+              {% for err in form.target_amount.errors %}
+                <div class="invalid-feedback d-block">{{ err }}</div>
+              {% endfor %}
             </div>
+            <div class="col-md-6">
+              <label for="{{ form.current_amount.id_for_label }}" class="form-label">Current Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.current_amount }}
+              </div>
+              {% for err in form.current_amount.errors %}
+                <div class="invalid-feedback d-block">{{ err }}</div>
+              {% endfor %}
+            </div>
+          </div>
 
-            <div class="d-flex justify-content-between">
-                <a href="{% url 'savings_goals' %}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update{% else %}Create{% endif %} Savings Goal</button>
-            </div>
+          <div class="mb-3">
+            <label for="{{ form.target_date.id_for_label }}" class="form-label">Target Date</label>
+            {{ form.target_date }}
+            {% for err in form.target_date.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'savings_goals' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
+              {% if form.instance.pk %}Update{% else %}Create{% endif %} Savings Goal
+            </button>
+          </div>
         </form>
+      </div>
     </div>
-</div>
-{% endblock %} 
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function rndPct(){ return Math.floor(Math.random()*100)+'%'; }
+  function rndColor(){
+    const arr=['rgba(0,128,255,0.2)','rgba(255,100,100,0.2)','rgba(100,255,100,0.2)'];
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
+  const layers=[document.getElementById('pulse1'), document.getElementById('pulse2')];
+  let visible=0;
+  function styleLayer(l){
+    l.style.background = `radial-gradient(circle at ${rndPct()} ${rndPct()}, ${rndColor()}, transparent 60%)`;
+  }
+  function crossfade(){
+    const next = 1 - visible;
+    styleLayer(layers[next]);
+    layers[next].style.opacity = 1;
+    layers[visible].style.opacity = 0;
+    visible = next;
+  }
+  styleLayer(layers[0]); styleLayer(layers[1]);
+  setInterval(crossfade, 5000);
+</script>
+{% endblock %}
