@@ -1,6 +1,10 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import Transaction, Category
+from django import forms
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Field
+from .models import Category
 
 class TransactionForm(forms.ModelForm):
     class Meta:
@@ -51,13 +55,18 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ['name', 'description']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3
-            }),
-        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user  # store for later if needed
+
+        self.helper = FormHelper()
+        self.helper.form_show_labels = True
+        self.helper.layout = Layout(
+            Field('name', wrapper_class='mb-3'),
+            Field('description', wrapper_class='mb-3'),
+        )
+
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)

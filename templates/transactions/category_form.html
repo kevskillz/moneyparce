@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 
-{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Budget – MoneyParce{% endblock %}
+{% block title %}
+  {% if form.instance.pk %}Edit{% else %}Add{% endif %} Category – MoneyParce
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -21,29 +22,63 @@
     opacity: 0; transition: opacity 5s ease-in-out;
     background-repeat: no-repeat; background-size: 200% 200%;
   }
-  #pulse1 { opacity: 1; } #pulse2 { opacity: 0; }
+  #pulse1 { opacity: 1; }
+  #pulse2 { opacity: 0; }
 
-  /* Ensure inputs are dark gray with light text */
-  .form-control,
-  .form-select,
-  .input-group-text {
-    background: #2a2a2a !important;
-    border: 1px solid #444 !important;
-    color: #e0e0e0 !important;
+  /* Card styling */
+  .category-card {
+    background-color: #1e1e1e;
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    max-width: 48rem;
+    margin: 2rem auto;
   }
-  .form-control::placeholder {
-    color: #bbb !important;
+  .card-accent {
+    height: 6px;
+    background: linear-gradient(90deg,#00c6ff,#0072ff);
   }
-  .form-control:focus,
-  .form-select:focus {
-    background: #2a2a2a !important;
+  .card-header {
+    background: transparent;
+    border-bottom: none;
+    padding: 1.5rem;
+  }
+  .card-header h2 {
+    color: #fff;
+    margin: 0;
+    font-size: 1.75rem;
+  }
+
+  /* Form labels & inputs */
+  .form-label { color: #fff !important; }
+  .form-control {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #e0e0e0;
+    border-radius: .5rem;
+    width: 100%;
+    padding: .5rem;
+    transition: background .2s, color .2s;
+  }
+  .form-control::placeholder { color: #bbb; }
+  .form-control:focus {
+    background: #fff !important;
+    color: #000 !important;       /* user-typed text turns black */
     border-color: #00c6ff !important;
     box-shadow: 0 0 8px rgba(0,198,255,0.4) !important;
-    color: #fff !important;
   }
+  .invalid-feedback { color: #ff6b6b; }
 
-  .form-text {
-    color: #fff !important;
+  /* Buttons */
+  .btn-secondary {
+    background: #444; border: none; color: #e0e0e0; transition: background .2s;
+  }
+  .btn-secondary:hover { background: #555; }
+  .btn-primary {
+    background: #0072ff; border: none; transition: background .3s, box-shadow .3s;
+  }
+  .btn-primary:hover {
+    background: #005fcc; box-shadow: 0 0 8px rgba(0,198,255,0.6);
   }
 </style>
 {% endblock %}
@@ -52,60 +87,53 @@
   <div id="pulse1" class="pulse-layer"></div>
   <div id="pulse2" class="pulse-layer"></div>
 
-  <div class="container py-5">
-    <div class="card bg-dark text-light mx-auto" style="max-width:48rem; border:none; border-radius:1rem; box-shadow:0 8px 24px rgba(0,0,0,0.6);">
-      <div class="card-body">
+  <div class="container">
+    <div class="card category-card">
+      <div class="card-accent"></div>
+      <div class="card-header text-center">
+        <h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Category</h2>
+      </div>
+      <div class="card-body p-4">
         <form method="post" novalidate>
           {% csrf_token %}
 
-          <div class="mb-3">
-            <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
-            {{ form.category }}
-            {% for err in form.category.errors %}
-              <div class="invalid-feedback d-block">{{ err }}</div>
-            {% endfor %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.amount.id_for_label }}" class="form-label">Amount</label>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
-              {{ form.amount }}
+          <div class="row mb-3">
+            <div class="col-12">
+              <label for="id_name" class="form-label">Name</label>
+              <input
+                type="text"
+                name="name"
+                id="id_name"
+                class="form-control"
+                placeholder="Category name"
+                value="{{ form.name.value|default_if_none:'' }}"
+              >
+              {% for err in form.name.errors %}
+                <div class="invalid-feedback d-block">{{ err }}</div>
+              {% endfor %}
             </div>
-            {% for err in form.amount.errors %}
-              <div class="invalid-feedback d-block">{{ err }}</div>
-            {% endfor %}
           </div>
 
-          <div class="mb-3">
-            <label for="{{ form.period.id_for_label }}" class="form-label">Period</label>
-            {{ form.period }}
-            {% for err in form.period.errors %}
-              <div class="invalid-feedback d-block">{{ err }}</div>
-            {% endfor %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date</label>
-            {{ form.start_date }}
-            {% for err in form.start_date.errors %}
-              <div class="invalid-feedback d-block">{{ err }}</div>
-            {% endfor %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date (Optional)</label>
-            {{ form.end_date }}
-            {% for err in form.end_date.errors %}
-              <div class="invalid-feedback d-block">{{ err }}</div>
-            {% endfor %}
-            <div class="form-text">Leave blank for an ongoing budget.</div>
+          <div class="row mb-4">
+            <div class="col-12">
+              <label for="id_description" class="form-label">Description</label>
+              <textarea
+                name="description"
+                id="id_description"
+                class="form-control"
+                rows="3"
+                placeholder="Optional description"
+              >{{ form.description.value }}</textarea>
+              {% for err in form.description.errors %}
+                <div class="invalid-feedback d-block">{{ err }}</div>
+              {% endfor %}
+            </div>
           </div>
 
           <div class="d-flex justify-content-between">
-            <a href="{% url 'budget_list' %}" class="btn btn-secondary">Cancel</a>
+            <a href="{% url 'category_list' %}" class="btn btn-secondary">Cancel</a>
             <button type="submit" class="btn btn-primary">
-              {% if form.instance.pk %}Update{% else %}Create{% endif %} Budget
+              {% if form.instance.pk %}Update{% else %}Add{% endif %} Category
             </button>
           </div>
         </form>
@@ -116,24 +144,26 @@
 
 {% block extra_js %}
 <script>
-  function rndPct(){ return Math.floor(Math.random()*100)+'%'; }
-  function rndColor(){
-    const arr=['rgba(0,128,255,0.2)','rgba(255,100,100,0.2)','rgba(100,255,100,0.2)'];
-    return arr[Math.floor(Math.random()*arr.length)];
+  // Animated background
+  function rndPct() { return Math.floor(Math.random() * 100) + '%'; }
+  function rndColor() {
+    const arr = ['rgba(0,128,255,0.2)', 'rgba(255,100,100,0.2)', 'rgba(100,255,100,0.2)'];
+    return arr[Math.floor(Math.random() * arr.length)];
   }
-  const layers=[document.getElementById('pulse1'), document.getElementById('pulse2')];
-  let visible=0;
-  function styleLayer(l){
+  const layers = [document.getElementById('pulse1'), document.getElementById('pulse2')];
+  let visible = 0;
+  function styleLayer(l) {
     l.style.background = `radial-gradient(circle at ${rndPct()} ${rndPct()}, ${rndColor()}, transparent 60%)`;
   }
-  function crossfade(){
+  function crossfade() {
     const next = 1 - visible;
     styleLayer(layers[next]);
     layers[next].style.opacity = 1;
     layers[visible].style.opacity = 0;
     visible = next;
   }
-  styleLayer(layers[0]); styleLayer(layers[1]);
+  styleLayer(layers[0]);
+  styleLayer(layers[1]);
   setInterval(crossfade, 5000);
 </script>
 {% endblock %}
